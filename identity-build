@@ -41,7 +41,7 @@ appenddat () {
     cat $x | gpg --symmetric --armor --cipher=AES256 --batch --passphrase $GPXENV > /srv/$x.tgz.asc 
   done
   mkdir /srv 2>/dev/null
-  
+  rm -f ./*.tbin
 }
 
 
