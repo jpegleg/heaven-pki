@@ -1,0 +1,23 @@
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+
+[req_distinguished_name]
+countryName = XX
+countryName_default = XX
+stateOrProvinceName = XX
+localityName = XX
+localityName_default = XX
+organizationalUnitName = XX
+organizationalUnitName_default = XX
+commonName = TEMPLATE
+commonName_max = 64
+
+[v3_req]
+basicConstraints = CA:FALSE
+subjectKeyIdentifier = hash
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = TEMPLATE
