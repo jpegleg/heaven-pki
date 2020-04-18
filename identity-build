@@ -16,8 +16,13 @@ newcsr () {
 }
 
 signv3 () {
-  openssl x509 -req -days 365 -in CSR.csr -extfile v3.ext -CA ../ca-intermediate.crt -CAkey ../intermediate.key -out tmp.crt -sha256 -CAcreateserial -extensions 'v3_req'
+  if [ -f ../ca-intermediate.srl ]; then
+    openssl x509 -req -days 365 -in CSR.csr -extfile v3.ext -CA ../ca-intermediate.crt -CAkey ../intermediate.key -out tmp.crt -sha256 -CAserial ../ca-intermediate.srl -extensions 'v3_req'
+  else
+    openssl x509 -req -days 365 -in CSR.csr -extfile v3.ext -CA ../ca-intermediate.crt -CAkey ../intermediate.key -out tmp.crt -sha256 -CAcreateserial -extensions 'v3_req'
+  fi
 }
+
 
 checkenv () {
   if [ -f /etc/peerpub.pem ]; then
@@ -41,7 +46,7 @@ appenddat () {
     cat $x | gpg --symmetric --armor --cipher=AES256 --batch --passphrase $GPXENV > /srv/$x.tgz.asc 
   done
   mkdir /srv 2>/dev/null
-  rm -f ./*.tbin
+  rm -f ./*.tbin ./*.tbin.b64
 }
 
 
