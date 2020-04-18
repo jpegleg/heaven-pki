@@ -74,7 +74,7 @@ makefor () {
     appenddat
     rm -rf work/* work/.*pem
     endstamp=$(date +%Y%m%d%H%M%S)
-    logger "$endstamp - Heaven PKI new identies created"
+    logger "$endstamp - Heaven PKI new identities created"
   done
 }
 
