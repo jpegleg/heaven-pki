@@ -13,6 +13,9 @@ echo "because it will be needed by clients to access the identity secret, if you
 echo "If you want to print it out, echo $GPXENV"
 echo "Overwrite this random password with a derived shared secret or other password if you like."
 echo "Just export GPXENV=whateveryourpasswordyouwanttouseisetc"
+echo "But keep in mind history file logging! If you don't want to log it to history"
+echo "HISTCONTROL=ignoreboth"
+echo "And keep two spaces before your commands"
 echo
 echo "Now you need to create your template file for your PKI, starting vi/vim/nano session..."
 echo
