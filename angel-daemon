@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+infinity () {
+  while true; do 
+    for x in $(cat /etc/heaven-subjects.cfg); do
+      file=$(echo "$x" | cut -d'@' -f2).identity.tbin.tgz.asc
+      rsync -raz ./$file "$x":/var/heaven-pki/landing-zone/ || scp ./$file "$x":/var/heaven-pki/landing-zone/ || logger "Angel Daemon failed to send to a configured subject."
+      sleep 1
+    done
+    sleep 600
+  done
+}
+      
+cd /srv
+
+echo "Initializing the Angel Daemon" | logger
+
+infinity || logger "Angel Daemon exit $?"
