@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+echo "starting inveractive CA setup..."
+openssl ecparam -name secp384r1 -genkey -noout -out secp384r1.pem
+mv secp384r1.pem ca.key
+openssl req -sha256 -new -x509 -key ./ca.key -out ca.crt -days 3650
+openssl ecparam -name secp384r1 -genkey -noout -out secp384r1.pem
+mv secp384r1.pem intermediate.key
+openssl req -sha256 -new -x509 -key ./intermediate.key -out ca-intermediate.crt -days 3650
+echo "Setting shared secret to environment variable GPXENV"
+export GPXENV=$(openssl rand -base64 64 | sed 's/\//3/g' | sed 's/=/t/g' | tr -d '\n')
+echo "Write GPXENV to disk if you need to, or save it for later however you manage secrets"
+echo "because it will be needed by clients to access the identity secret, if you use that feature."
+echo "If you want to print it out, echo $GPXENV"
+echo "Overwrite this random password with a derived shared secret or other password if you like."
+echo "Just export GPXENV=whateveryourpasswordyouwanttouseisetc"
+echo
+echo "Now you need to create your template file for your PKI, starting vi/vim/nano session..."
+echo
+vim v3.template || vi v3.template || nano v3.template
+echo
+echo "Now you need to create your auth.config, just put your pki server, probably use $(hostname) "
+echo 
+vim auth.config || vi auth.config || nano auth.config
+echo
+echo "Edit the SUBJECT section of identity-build to represent this $(hostname) and locality etc."
+echo 
+vim identity-build || vi identity-build || nano-identity-build
+echo
+chmod +x ./identity-build
+echo
+echo "You are now setup with an internal PKI chain of trust and automated bulk identity management!"
+echo
+echo "Now to ensure the /srv directory is in place..."
+mkdir /srv 
+echo
+echo
+echo "You may need sudo permissions to create /srv initially."
+echo "If /srv is already there, then as long as the heaven user can write to it, that is done."
+echo
+echo
+echo "To run Heaven, and many more options, inside of a cloud hosted Encryption As A Service  API, contact carefuldata@protonmail.com"
+echo
