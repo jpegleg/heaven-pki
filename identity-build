@@ -97,6 +97,9 @@ echo "................................................."
 echo ".......................PKI......................."
 echo "................................................."
 
+mkdir /var/heaven-pki 2>/dev/null
+cd /var/heaven-pki
+
 makefor || echo "Exit code $?"
 cp input.list input.list.previous.$(date +%Y%m%d%H%M%S)
 logger "$endstamp Heaven PKI - run completed with start time $runstamp "
