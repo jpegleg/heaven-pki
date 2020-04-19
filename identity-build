@@ -54,7 +54,7 @@ makefor () {
   echo "input.list SHA256"
   sha256sum input.list
   runstamp=$(date +%Y%m%d%H%S)
-  cat input.list | while read line; do
+  cat input.list | sed '/^\s*$/d'| while read line; do
     export line=$line
     mkdir work 2>/dev/null
     cd work || logger "$runstamp Heaven PKI - could not find work directory but tried to make one... permissions issue?"
