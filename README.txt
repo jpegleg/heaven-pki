@@ -86,9 +86,23 @@ identity-api-backend $makeidentity
 And then the angel-daemon picks it up and sends it if configured in
 the /etc/heaven-subjects.cfg over to the host.
 
+# Way to use it #3
 
+Use the identity-api-backend2, which is a wrapper for the identity-build, but will take in 
+standard web server log URI contexts. This way your front end can pass the HTTPD/NGINX data to
+the backend as the argument. 
 
-# About the shared secret
+This method adds in deriving a shared secret from a public secp384r1 key in the 7th. Example URI:
+
+yourcaserver:/pki/api/id/gen/$base64FQDN/$base64secp384r1public
+
+so it would actually look something like this
+
+yourcaserver:/pki/api/id/gen/ZXhhbXBsZW5vZGUxLm9yZw==/LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUhZd0VBWUhLb1pJemowQ0FRWUZLNEVFQUNJRFlnQUVZTlZiN3gzODd6V0RmQzRsSlZtSHVCRFJUY2pNaEFIVQp0Q0lNZFZtVVNmc0ZFQkJ4VklZcmhhRi9EWWo1VlZNaSt5SFZSOFZWeWRIOFVMNWs1aW8xeG1TUHJrdCsydTZUClc5QitDTmhMUlEreDB5MmtOWkZpZ2poOWt4TUhqS0swCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=
+
+To control which devices are able to make api requests, use firealling and TLS client authentication on your front end if you take this route.
+
+# More about the shared secret (EC derived or not, the GPXENV)
 
 There is a shared secret between the subjects and the Heaven PKI CA server that is 
 used via environment variable. This choice was made to be compatible with ephemeral
