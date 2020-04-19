@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+mkdir /var/heaven-pki 2>/dev/null
+cd /var/heaven-pki
 echo "starting inveractive CA setup..."
 openssl ecparam -name secp384r1 -genkey -noout -out secp384r1.pem
 mv secp384r1.pem ca.key
