@@ -1,10 +1,24 @@
 # heaven-pki
 A private PKI tool with identity tracking component generation using ECC, not RSA.
 
-# Way to use it #1:
+A guided setup script (you can do the setup on your own based on your CA requirements):
+
+sudo bash making-heaven_initial_CA_setup
+
+
+After initial setup, then you can actually run the 
+angel-daemon and identity programs as non-priveledged users.
+You could make a user for each daemon and easily customize
+work directories to match your filesystem desires.
+
+
+# Way to use it #1 (identity-build):
 
 Make a CA server that has SSH configured with keys to allow access to
 each server that receives an identity file.
+
+cp identity-build /usr/local/bin/
+chmod +x /usr/local/bin/identity-build
 
 The CA server runs the Heaven PKI "identity-build" with the input.list file
 containing all of the servers, we'll call them "subjects" in Heaven,
@@ -32,6 +46,9 @@ The default length of the issued certificates is 1 year.
 
 
 # Way to use it #2
+
+cp identity-api-backend /usr/local/bin/
+chmod +x /usr/local/bin/identity-api-backend
 
 Instead of crontabs and making the identities in a batch, use API
 calls. You will have to build/create the front-end on your own
