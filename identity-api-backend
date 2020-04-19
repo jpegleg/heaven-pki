@@ -81,6 +81,9 @@ makefor () {
   done
 }
 
+mkdir /var/heaven-pki 2>/dev/null
+cd /var/heaven-pki
+
 makefor $1 || logger "Heaven PKI API error $?"
 
 logger "$endstamp Heaven PKI API request - run completed with start time $runstamp "
