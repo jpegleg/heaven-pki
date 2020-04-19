@@ -96,11 +96,14 @@ This method adds in deriving a shared secret from a public secp384r1 key in the 
 
 yourcaserver:/pki/api/id/gen/$base64FQDN/$base64secp384r1public
 
-so it would actually look something like this
+So it would actually look something like this, using some example public key and FQDN:
 
 yourcaserver:/pki/api/id/gen/ZXhhbXBsZW5vZGUxLm9yZw==/LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUhZd0VBWUhLb1pJemowQ0FRWUZLNEVFQUNJRFlnQUVZTlZiN3gzODd6V0RmQzRsSlZtSHVCRFJUY2pNaEFIVQp0Q0lNZFZtVVNmc0ZFQkJ4VklZcmhhRi9EWWo1VlZNaSt5SFZSOFZWeWRIOFVMNWs1aW8xeG1TUHJrdCsydTZUClc5QitDTmhMUlEreDB5MmtOWkZpZ2poOWt4TUhqS0swCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=
 
 To control which devices are able to make api requests, use firealling and TLS client authentication on your front end if you take this route.
+
+The subject (client) will need the ca servers public key if it is going to derive the secret to decrypt its contents from
+the angel daemon. You can have the front end publish the ca server EC public keys so that the subject can curl it down etc.
 
 # More about the shared secret (EC derived or not, the GPXENV)
 
