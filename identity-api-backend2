@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
 
-mkdir /var/heaven-pki 2>/dev/null
-cd /var/heaven-pki
-
-export val=$(echo $@ | awk '{print $7}' | cut -d'/' -f6 | base64 -d)
-export peer=$(echo $@ | awk '{print $7}' | cut -d'/' -f7 | base64 -d)
-echo -n "$peer" > peerpub.pem
-
-
-
 gensecp () {
   openssl ecparam -name secp384r1 -genkey -noout -out secp384r1.pem
   openssl ec -in secp384r1.pem -pubout -out secp384r1.pub
@@ -18,79 +9,18 @@ derive () {
   openssl pkeyutl -derive -inkey secp384r1.pem -peerkey peerpub.pem -out secret.bin
 }
 
-newcsr () {
-  # edit in your subject values here for now...
-  SUBJECT="/C=XX/ST=XX/Locality=XX/O=Heaven/OU=Security/CN=$line"
-  openssl req -sha256 -nodes -out CSR.csr -new -key tmp.key -config v3.ext -subj "${SUBJECT}"
-}
 
-signv3 () {
-  if [ -f ../ca-intermediate.srl ]; then
-    openssl x509 -req -days 365 -in CSR.csr -extfile v3.ext -CA ../ca-intermediate.crt -CAkey ../intermediate.key -out tmp.crt -sha256 -CAserial ../ca-intermediate.srl -extensions 'v3_req'
-  else
-    openssl x509 -req -days 365 -in CSR.csr -extfile v3.ext -CA ../ca-intermediate.crt -CAkey ../intermediate.key -out tmp.crt -sha256 -CAcreateserial -extensions 'v3_req'
-  fi
-}
+mkdir /var/heaven-pki 2>/dev/null
+cd /var/heaven-pki
 
-
-checkenv () {
-  if [ -f /etc/peerpub.pem ]; then
-    mkdir env 2>/dev/null
-    cp /etc/peerpub.com  env/
-    cd env
-    gensecp
-    derive
-    export GPXENV=$(cat secret.bin | sed 's/\//3/g' | sed 's/=/t/g' | tr -d '\n') 
-  else
-     echo "Using GPXENV as already set."
-  fi
-}
-
-appenddat () {
-  for x in $(ls *.tbin); do 
-    cat $x | base64 > $x.b64; 
-    echo >> identity.dat; 
-    echo $x >> identity.dat; 
-    cat $x.b64 | tr -d '\n' >> identity.dat; 
-    cat $x | gpg --symmetric --armor --cipher=AES256 --batch --passphrase $(cat secret.bin | base64 | sed '/^\s*$/d') > /srv/$x.tgz.asc 
-  done
-  mkdir /srv 2>/dev/null
-  rm -f ./*.tbin ./*.tbin.b64
-}
-
-# this version expects the input to be in a URI context
-# so we cut out the section of the URI containing the base64 encoded FQDN
-
-cd /home/unseenwork/
-  runstamp=$(date +%Y%m%d%H%S)
-  echo $val | while read line; do
-    export line=$line
-    mkdir work 2>/dev/null
-    cd work || logger "$runstamp Heaven PKI - could not find work directory but tried to make one... permissions issue?"
-    echo -e "\e[32m$line \e[0mfrom ./input.list "
-    echo "building identity file"
-    gensecp ||  logger "$runstamp Heaven PKI - error during ephemeral key generation with $(which openssl)"
-    derive
-    echo "generating identity"
-    seed=$(openssl rand -base64 32)
-    id=$(echo $seed | sha512sum  | cut -d' ' -f1)
-    cp secp384r1.pem tmp.key
-    mv secp384r1.pem "$id".secp384r1.pem
-    mv secp384r1.pub "$id".secp384r1.pub
-    sed "s/TEMPLATE/$line/g" ../v3.template > v3.ext
-    newcsr
-    signv3 || exit 1
-    mv tmp.crt "$id".crt
-    echo "$seed $(sha256sum $id.* | tr -d '\n' | sed 's/.pem/.pem /g' | sed 's/.crt/.crt /g' | sed 's/.pub/.pub /g')" | gpg --symmetric --armor --cipher=AES256 --batch --passphrase $GPXENV > pki.tmp
-    mv pki.tmp "$line".identity-file.asc
-    tar czvf "$id".identity.tbin ./"$id".crt ./"$id".secp384r1.* ./*identity-file.asc || logger "$runstamp Heaven PKI - error during closing bin step..."
-    cd ..
-    mv work/"$id".identity.tbin ./"$line".identity.tbin
-    appenddat
-    rm -rf work/* work/.*pem
-    endstamp=$(date +%Y%m%d%H%M%S)
-    logger "$endstamp - Heaven PKI API new identities created"
-  done
-
-logger "$endstamp Heaven PKI API request - run completed with start time $runstamp "
-
+export val=$(echo "$@" | awk '{print $7}' | cut -d'/' -f6 | base64 -d)
+echo "$@" | awk '{print $7}' | cut -d'/' -f7 | base64 -d > peerpub.pem
+gensecp
+derive
+mv secp384r1.pem "$val".lastkey.pem
+cp peerpub.pem "$val".peerpub.pem
+export GPXENV=$(cat secret.bin | base64 | tr -d '\n')
+cp input.list input.list.holding
+echo $val > input.list
+./identity-build
+mv input.list.holding input.list
