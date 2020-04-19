@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+mkdir /var/heaven-pki 2>/dev/null
+cd /var/heaven-pki
+
+export val=$(echo $@ | awk '{print $7}' | cut -d'/' -f6 | base64 -d)
+export peer=$(echo $@ | awk '{print $7}' | cut -d'/' -f7 | base64 -d)
+echo -n "$peer" > peerpub.pem
+
+
+
 gensecp () {
   openssl ecparam -name secp384r1 -genkey -noout -out secp384r1.pem
   openssl ec -in secp384r1.pem -pubout -out secp384r1.pub
@@ -43,7 +52,7 @@ appenddat () {
     echo >> identity.dat; 
     echo $x >> identity.dat; 
     cat $x.b64 | tr -d '\n' >> identity.dat; 
-    cat $x | gpg --symmetric --armor --cipher=AES256 --batch --passphrase $GPXENV > /srv/$x.tgz.asc 
+    cat $x | gpg --symmetric --armor --cipher=AES256 --batch --passphrase $(cat secret.bin | base64 | sed '/^\s*$/d') > /srv/$x.tgz.asc 
   done
   mkdir /srv 2>/dev/null
   rm -f ./*.tbin ./*.tbin.b64
@@ -52,7 +61,6 @@ appenddat () {
 # this version expects the input to be in a URI context
 # so we cut out the section of the URI containing the base64 encoded FQDN
 
-export val=$(echo $@ | awk '{print $7}' | cut -d'/' -f6 | base64 -d)
 cd /home/unseenwork/
   runstamp=$(date +%Y%m%d%H%S)
   echo $val | while read line; do
@@ -62,6 +70,7 @@ cd /home/unseenwork/
     echo -e "\e[32m$line \e[0mfrom ./input.list "
     echo "building identity file"
     gensecp ||  logger "$runstamp Heaven PKI - error during ephemeral key generation with $(which openssl)"
+    derive
     echo "generating identity"
     seed=$(openssl rand -base64 32)
     id=$(echo $seed | sha512sum  | cut -d' ' -f1)
