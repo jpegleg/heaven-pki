@@ -12,8 +12,11 @@ line delimited:
 
 `
 khost1.com
+
 khost2.com
+
 somethingsomething
+
 10.1.1.45
 `
 
@@ -23,8 +26,11 @@ which is also a line delimited file that might look like this:
 
 `
 pkideploy@khost1.com
+
 pkideploy@khost2.com
+
 root@somethingsomething
+
 transport-admin@10.1.1.45
 `
 
@@ -50,6 +56,7 @@ passed to it. It takes the FQDN in base64 encoded format.
 Manual example:
 `
 makeidentity=$(echo -n khost1.com | base64)
+
  	identity-api-backend $makeidentity
 `
 
@@ -71,12 +78,18 @@ as well:
 
 `
 gensecp () {
+
   openssl ecparam -name secp384r1 -genkey -noout -out secp384r1.pem
+  
   openssl ec -in secp384r1.pem -pubout -out secp384r1.pub
+  
 }
 
+
 derive () {
+
   openssl pkeyutl -derive -inkey secp384r1.pem -peerkey peerpub.pem -out secret.bin
+  
 }
 `
 
@@ -96,6 +109,7 @@ keep in mind measures to avoid storing the GPXENV value in the logs:
 
 `
 HISTCONTROL=ignoreboth
+
 `
 
 And then keep two spaces before your command :)
