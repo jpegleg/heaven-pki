@@ -40,7 +40,7 @@ or hire me to make one for you. ( carefuldata at protonmail dot com )
 The identity-api-backend is called by a front end, or on the command line.
 Note that it does not have a locking mechanism built in, the front end
 must control that. Because of that, if the  	identity-api-backend is 
-called twice, they can corrupt eachothers processing!
+called twice at the same time, they can corrupt eachothers processing!
 
 The  	identity-api-backend creates an identity from the first argument
 passed to it. It takes the FQDN in base64 encoded format. 
