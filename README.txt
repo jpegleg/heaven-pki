@@ -11,6 +11,21 @@ angel-daemon and identity programs as non-priveledged users.
 You could make a user for each daemon and easily customize
 work directories to match your filesystem desires.
 
+Decrypting a file delivered by the angel demon can be done multiple ways.
+If you are doing it on the command line or in an automated fashion, here
+is an example approach:
+
+  HISTCONTROL=ignoreboth  
+
+  heavenfile=/var/heaven-pki/landing-zone/$(hostname).identity.tbin.tgz.asc
+
+  gpg --yes --no-tty --passphrase $GPXENV -d $heavenfile > /var/heaven-pki/identity.tbin.tgz 
+
+  idfile=/var/heaven-pki/landing-zone/$(hostname).identity-file.asc
+
+  gpg --yes --no-tty --passphrase $GPXENV -d $idfile > /var/heaven-pki/identity-file.txt 
+
+
 
 # Way to use it #1 (identity-build):
 
