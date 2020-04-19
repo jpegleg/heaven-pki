@@ -10,15 +10,11 @@ The CA server runs the Heaven PKI "identity-build" with the input.list file
 containing all of the servers, we'll call them "subjects" in Heaven,
 line delimited:
 
-`
-khost1.com
+`khost1.com`
+`khost2.com`
+`somethingsomething`
+`10.1.1.45`
 
-khost2.com
-
-somethingsomething
-
-10.1.1.45
-`
 
 The angel-daemon runs on the CA server, shipping out the identity files
 to each subject over SSH, as configured in /etc/heaven-subjects.cfg
