@@ -98,7 +98,7 @@ yourcaserver:/pki/api/id/gen/$base64FQDN/$base64secp384r1public
 
 So it would actually look something like this, using some example public key and FQDN:
 
-yourcaserver:/pki/api/id/gen/ZXhhbXBsZW5vZGUxLm9yZw==/LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUhZd0VBWUhLb1pJemowQ0FRWUZLNEVFQUNJRFlnQUVZTlZiN3gzODd6V0RmQzRsSlZtSHVCRFJUY2pNaEFIVQp0Q0lNZFZtVVNmc0ZFQkJ4VklZcmhhRi9EWWo1VlZNaSt5SFZSOFZWeWRIOFVMNWs1aW8xeG1TUHJrdCsydTZUClc5QitDTmhMUlEreDB5MmtOWkZpZ2poOWt4TUhqS0swCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=
+https://yourcaserver-url:/pki/api/id/gen/ZXhhbXBsZW5vZGUxLm9yZw==/LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUhZd0VBWUhLb1pJemowQ0FRWUZLNEVFQUNJRFlnQUVZTlZiN3gzODd6V0RmQzRsSlZtSHVCRFJUY2pNaEFIVQp0Q0lNZFZtVVNmc0ZFQkJ4VklZcmhhRi9EWWo1VlZNaSt5SFZSOFZWeWRIOFVMNWs1aW8xeG1TUHJrdCsydTZUClc5QitDTmhMUlEreDB5MmtOWkZpZ2poOWt4TUhqS0swCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=
 
 To control which devices are able to make api requests, use firealling and TLS client authentication on your front end if you take this route.
 
