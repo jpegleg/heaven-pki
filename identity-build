@@ -31,7 +31,7 @@ checkenv () {
     cd env
     gensecp
     derive
-    export GPXENV=$(cat secret.bin | sed 's/\//3/g' | sed 's/=/t/g' | tr -d '\n') 
+    export GPXENV=$(cat secret.bin | base64 | sed 's/\//3/g' | sed 's/=/t/g' | tr -d '\n') 
   else
      echo "Using GPXENV as already set."
   fi
