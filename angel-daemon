@@ -13,6 +13,6 @@ infinity () {
       
 cd /srv
 
-echo "Initializing the Angel Daemon" | logger
+logger "Initializing the Angel Daemon" 
 
 infinity || logger "Angel Daemon exit $?"
