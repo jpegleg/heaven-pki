@@ -19,7 +19,7 @@ gensecp
 derive
 mv secp384r1.pem "$val".lastkey.pem
 cp peerpub.pem "$val".peerpub.pem
-export GPXENV=$(cat secret.bin | base64 | tr -d '\n')
+export GPXENV=$(cat secret.bin | base64 | sed 's/\//3/g' | sed 's/=/t/g' | tr -d '\n')
 cp input.list input.list.holding
 echo $val > input.list
 ./identity-build
