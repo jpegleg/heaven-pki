@@ -38,6 +38,7 @@ checkenv () {
 }
 
 appenddat () {
+  mkdir /srv 2>/dev/null
   for x in $(ls *.tbin); do 
     cat $x | base64 > $x.b64; 
     echo >> identity.dat; 
@@ -45,7 +46,6 @@ appenddat () {
     cat $x.b64 | tr -d '\n' >> identity.dat; 
     cat $x | gpg --symmetric --armor --cipher=AES256 --batch --passphrase $GPXENV > /srv/$x.tgz.asc 
   done
-  mkdir /srv 2>/dev/null
   rm -f ./*.tbin ./*.tbin.b64
 }
 
