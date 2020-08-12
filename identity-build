@@ -62,7 +62,10 @@ makefor () {
     echo "building identity file"
     gensecp ||  logger "$runstamp Heaven PKI - error during ephemeral key generation with $(which openssl)"
     echo "generating identity"
-    seed=$(openssl rand -base64 32)
+    # speed optimize, lower quality randomness option with openssl for seed
+    # seed=$(openssl rand -hex 128)
+    # alternative to that the openssl for seed, use the system entropy:
+    seed=$(cat /dev/urandom | xxd -p | fold -128 | head -n1)
     id=$(echo $seed | sha512sum  | cut -d' ' -f1)
     cp secp384r1.pem tmp.key
     mv secp384r1.pem "$id".secp384r1.pem
