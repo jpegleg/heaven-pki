@@ -66,8 +66,19 @@ makefor () {
     # seed=$(openssl rand -hex 128)
     # alternative to that the openssl for seed, use the system entropy:
     seed=$(cat /dev/urandom | xxd -p | fold -128 | head -n1)
+    # the seed isn't a seed as you might expect..
+    # it is used in heaven as a UID, an id string
+    # that is not used directly by heaven
+    # rather heaven provides and links these UIDs
+    # which can then be leveraged by another application
+    # such as LDAP, cloud services, or whatnot identity management
+    # solutions
     id=$(echo $seed | sha512sum  | cut -d' ' -f1)
     cp secp384r1.pem tmp.key
+    # basically creating a database of sorts on disk here
+    # so, yeah know, this could be a secret disk
+    # not something I would run in a public cloud
+    # as is, but rather something on prem and secured
     mv secp384r1.pem "$id".secp384r1.pem
     mv secp384r1.pub "$id".secp384r1.pub
     sed "s/TEMPLATE/$line/g" ../v3.template > v3.ext
