@@ -76,8 +76,9 @@ makefor () {
     id=$(echo $seed | sha512sum  | cut -d' ' -f1)
     cp secp384r1.pem tmp.key
     # basically creating a database of sorts on disk here
-    # so, yeah know, this could be a secret disk
-    # not something I would run in a public cloud
+    # so, this could be a secret disk if secrecy of these
+    # generated components is important to you
+    # so not something I would run in a public cloud
     # as is, but rather something on prem and secured
     mv secp384r1.pem "$id".secp384r1.pem
     mv secp384r1.pub "$id".secp384r1.pub
