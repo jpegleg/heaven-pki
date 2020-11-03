@@ -14,13 +14,48 @@ mkdir /var/heaven-pki 2>/dev/null
 cd /var/heaven-pki
 
 export val=$(echo "$@" | awk '{print $7}' | cut -d'/' -f6 | base64 -d)
+
 echo "$@" | awk '{print $7}' | cut -d'/' -f7 | base64 -d > peerpub.pem
-gensecp
-derive
+
+# Generate a one time EC key pair
+gensecp || echo "failed gensecp function $?"
+
+# using the remote side (client side) equivilent of secp384r1.pub
+# as peerpub.pem
+derive || echo "failed derive function $?"
+
+# store that onen time key in a "lastkey" file for that "client"
 mv secp384r1.pem "$val".lastkey.pem
+# store the public from the client as the $val variable set above aka that "client"
 cp peerpub.pem "$val".peerpub.pem
+
+# This could be whatever transformation and permutations you want to build in...
+# customize it to your needs. Say, switch to hex by replacing the modified base64
+# base64 | sed 's/\//3/g' | sed 's/=/t/g'
+# to 
+# xxd -p
+# and it will use serialized hex, for example
 export GPXENV=$(cat secret.bin | base64 | sed 's/\//3/g' | sed 's/=/t/g' | tr -d '\n')
+# or you could just set GPXENV to whatever, just be sure you can use that value
+# as you will need it for decryption.
+# see https://github.com/jpegleg/heaven-pki/blob/master/identity-build
+# where the GPXENV is used for symmetric AES256
+# feel free to add that same use to this script as needed
+# the thing you want encrypted | gpg --symmetric --armor --cipher=AES256 --batch --passphrase $GPXENV > thething
+
+# juggle the input.list file to keep defaults
+# but bounce out of the defaults for this
+# script execution
 cp input.list input.list.holding
+
 echo $val > input.list
+
+# execute the identity-build
+# you can change this to the full path or whatnot
+# I might use /usr/local/bin/identity-build here instead
+# but the copy in the working directory is what 
+# we'll use by default here
+
 ./identity-build
+
 mv input.list.holding input.list
