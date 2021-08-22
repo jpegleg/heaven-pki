@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+
+gensecp () {
+  openssl ecparam -name secp384r1 -genkey -noout -out secp384r1.pem
+  openssl ec -in secp384r1.pem -pubout -out secp384r1.pub
+}
+
+derive () {
+  openssl pkeyutl -derive -inkey secp384r1.pem -peerkey peerpub.pem -out secret.bin
+}
+
+newcsr () {
+  # edit in your subject values here for now...
+  SUBJECT="/C=XX/ST=XX/Locality=XX/O=XX/OU=XX/CN=$line"
+  openssl req -sha256 -nodes -out CSR.csr -new -key tmp.key -config v3.ext -subj "${SUBJECT}"
+}
+
+signv3 () {
+  if [ -f ../ca-intermediate.srl ]; then
+    openssl x509 -req -days 365 -in CSR.csr -extfile v3.ext -CA ../ca-intermediate.crt -CAkey ../intermediate.key -out tmp.crt -sha256 -CAserial ../ca-intermediate.srl -extensions 'v3_req'
+  else
+    openssl x509 -req -days 365 -in CSR.csr -extfile v3.ext -CA ../ca-intermediate.crt -CAkey ../intermediate.key -out tmp.crt -sha256 -CAcreateserial -extensions 'v3_req'
+  fi
+}
+
+generatekeyfile () {
+    stamp=$(date +%Y%m%d%H%M%S)_$(echo $RANDOM | cut -c2-4)
+    cat /dev/urandom | head -n7 > "$stamp".keyfile
+    cp "$stamp".keyfile tarkey.bin
+}
+
+checkenv () {
+  if [ -f /etc/peerpub.pem ]; then
+    mkdir env 2>/dev/null
+    cp /etc/peerpub.com  env/
+    cd env
+    gensecp
+    derive
+    export GPXENV=$(cat secret.bin | base64 | sed 's/\//3/g' | sed 's/=/t/g' | tr -d '\n')
+  else
+    echo "Using GPXENV as already set."
+  fi
+}
+
+appenddat () {
+  generatekeyfile
+  for x in $(ls *.tbin); do
+    cat $x | base64 > $x.b64;
+    echo >> identity.dat;
+    echo $x >> identity.dat;
+    cat $x.b64 | tr -d '\n' >> identity.dat;
+    openssl  enc -pbkdf2 -aes256 -base64 -k tarkey.bin -e -in identity.dat -out /srv/$x.tgz.asc
+  done
+  mkdir /srv 2>/dev/null
+  rm -f ./*.tbin ./*.tbin.b64
+}
+
+
+makefor () {
+  echo "input.list SHA256"
+  sha256sum input.list
+  runstamp=$(date +%Y%m%d%H%S)
+  cat input.list | sed '/^\s*$/d'| while read line; do
+    export line=$line
+    mkdir work 2>/dev/null
+    cd work || logger "$runstamp XX PKI - could not find work directory but tried to make one... permissions issue?"
+    echo -e "\e[32m$line \e[0mfrom ./input.list "
+    echo "building identity file"
+    gensecp ||  logger "$runstamp XX PKI - error during ephemeral key generation with $(which openssl)"
+    echo "generating identity"
+    # speed optimize, lower quality randomness option with openssl for seed
+    # seed=$(openssl rand -hex 128)
+    # alternative to that the openssl for seed, use the system entropy:
+    seed=$(cat /dev/urandom | xxd -p | fold -128 | head -n1)
+    # the seed isn't a seed as you might expect..
+    # it is used in isolator as a UID, an id string
+    # that is not used directly by isolator
+    # rather isolator provides and links these UIDs
+    # which can then be leveraged by another application
+    # such as LDAP, cloud services, or whatnot identity management
+    # solutions
+    id=$(echo $seed | sha512sum  | cut -d' ' -f1)
+    cp secp384r1.pem tmp.key
+    # basically creating a database of sorts on disk here
+    # so, this could be a secret disk if secrecy of these
+    # generated components is important to you
+    # so not something I would run in a public cloud
+    # as is, but rather something on prem and secured
+    mv secp384r1.pem "$id".secp384r1.pem
+    mv secp384r1.pub "$id".secp384r1.pub
+    sed "s/TEMPLATE/$line/g" ../v3.template > v3.ext
+    newcsr
+    signv3 || exit 1
+    mv tmp.crt "$id".crt
+    generatekeyfile
+    echo "$seed $(sha256sum $id.* | tr -d '\n' | sed 's/.pem/.pem /g' | sed 's/.crt/.crt /g' | sed 's/.pub/.pub /g')" > pki.in
+    openssl  enc -pbkdf2 -aes256 -base64 -k tarkey.bin -e -in pki.in -out pki.tmp
+    mv pki.tmp "$line".identity-file.asc && rm -rf pki.in
+    tar czvf "$id".identity.tbin ./"$id".crt ./"$id".secp384r1.* ./*identity-file.asc || logger "$runstamp XX PKI - error during closing bin step..."
+    cd ..
+    mv work/"$id".identity.tbin ./"$line".identity.tbin
+    appenddat
+    rm -rf work/* work/.*pem
+    endstamp=$(date +%Y%m%d%H%M%S)
+    logger "$endstamp - XX PKI new identities created"
+  done
+}
+
+
+
+echo
+echo "................................................."
+echo "................................................."
+echo "................................................."
+echo "(((((((((((((((((( i-so lat or ))))))))))))))))))"
+echo "................................................."
+echo ".......................PKI......................."
+echo "................................................."
+
+mkdir /var/isolator-pki 2>/dev/null
+cd /var/isolator-pki
+
+makefor || echo "Exit code $?"
+cp input.list input.list.previous.$(date +%Y%m%d%H%M%S)
+logger "$endstamp XX PKI - run completed with start time $runstamp "
