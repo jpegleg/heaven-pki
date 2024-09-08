@@ -29,7 +29,7 @@ vim auth.config || vi auth.config || nano auth.config
 echo
 echo "Edit the SUBJECT section of identity-build to represent this $(hostname) and locality etc."
 echo 
-vim identity-build || vi identity-build || nano-identity-build
+vim identity-build || vi identity-build || nano identity-build
 echo
 chmod +x ./identity-build
 echo
